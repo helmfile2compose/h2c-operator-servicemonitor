@@ -34,12 +34,9 @@ Replaces the Prometheus Operator's ServiceMonitor reconciliation with a static P
 
 `60` -- runs after keycloak (priority 50, which may create Services that ServiceMonitors target) and after trust-manager (priority 20, which provides CA bundle ConfigMaps for TLS-enabled scrape targets).
 
-## Depends on
+## Optional companions
 
-- **h2c-operator-cert-manager** -- trust-manager needs it, and TLS-enabled ServiceMonitors need the CA bundles
-- **h2c-operator-trust-manager** -- provides CA bundle ConfigMaps referenced by `tlsConfig.ca.configMap`
-
-When using h2c-manager, both are auto-resolved as dependencies.
+- **h2c-operator-cert-manager** + **h2c-operator-trust-manager** -- needed only for HTTPS scrape targets with CA bundle mounting. Not required for HTTP-only scraping.
 
 ## Dependencies
 
@@ -56,7 +53,7 @@ For Grafana setup (k8s-sidecar workaround), see [kube-prometheus-stack workaroun
 
 ## Usage
 
-Via h2c-manager (recommended -- auto-resolves cert-manager + trust-manager dependencies):
+Via h2c-manager (recommended):
 
 ```bash
 python3 h2c-manager.py servicemonitor
