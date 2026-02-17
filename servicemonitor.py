@@ -313,35 +313,42 @@ class ServiceMonitorConverter:
         ca_mounts: list[str] = []
 
         if scheme == "https":
-            tls_cfg = ep.get("tlsConfig", {})
-            tls_config: dict = {}
-
-            # CA certificate
-            ca_ref = tls_cfg.get("ca", {}).get("configMap", {})
-            cm_name = ca_ref.get("name", "")
-            cm_key = ca_ref.get("key", "ca-certificates.crt")
-            if cm_name and cm_name in ctx.configmaps:
-                container_path = f"/etc/prometheus/ca/{cm_name}/{cm_key}"
-                tls_config["ca_file"] = container_path
-                ca_mounts.append(
-                    f"./configmaps/{cm_name}/{cm_key}:{container_path}:ro"
-                )
-            elif cm_name:
-                ctx.warnings.append(
-                    f"ServiceMonitor '{sm_name}': CA configmap '{cm_name}' "
-                    f"not found — TLS job generated without ca_file"
-                )
-
-            # Server name for TLS verification (the cert SAN to check
-            # against, instead of the compose hostname)
-            server_name = tls_cfg.get("serverName", "")
-            if server_name:
-                tls_config["server_name"] = server_name
-
+            tls_config, ca_mounts = _build_tls_config(
+                ep, sm_name, ctx)
             if tls_config:
                 job["tls_config"] = tls_config
 
         return {"job": job, "ca_mounts": ca_mounts}
+
+
+def _build_tls_config(ep: dict, sm_name: str, ctx) -> tuple[dict, list[str]]:
+    """Build Prometheus TLS config and CA mounts from a ServiceMonitor endpoint."""
+    tls_cfg = ep.get("tlsConfig", {})
+    tls_config: dict = {}
+    ca_mounts: list[str] = []
+
+    # CA certificate
+    ca_ref = tls_cfg.get("ca", {}).get("configMap", {})
+    cm_name = ca_ref.get("name", "")
+    cm_key = ca_ref.get("key", "ca-certificates.crt")
+    if cm_name and cm_name in ctx.configmaps:
+        container_path = f"/etc/prometheus/ca/{cm_name}/{cm_key}"
+        tls_config["ca_file"] = container_path
+        ca_mounts.append(
+            f"./configmaps/{cm_name}/{cm_key}:{container_path}:ro"
+        )
+    elif cm_name:
+        ctx.warnings.append(
+            f"ServiceMonitor '{sm_name}': CA configmap '{cm_name}' "
+            f"not found — TLS job generated without ca_file"
+        )
+
+    # Server name for TLS verification
+    server_name = tls_cfg.get("serverName", "")
+    if server_name:
+        tls_config["server_name"] = server_name
+
+    return tls_config, ca_mounts
 
 
 def _is_excluded(name: str, exclude: list[str]) -> bool:
