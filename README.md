@@ -36,7 +36,7 @@ Replaces the Prometheus Operator's ServiceMonitor reconciliation with a static P
 
 ## Depends on
 
-- **h2c-operator-certmanager** -- trust-manager needs it, and TLS-enabled ServiceMonitors need the CA bundles
+- **h2c-operator-cert-manager** -- trust-manager needs it, and TLS-enabled ServiceMonitors need the CA bundles
 - **h2c-operator-trust-manager** -- provides CA bundle ConfigMaps referenced by `tlsConfig.ca.configMap`
 
 When using h2c-manager, both are auto-resolved as dependencies.
@@ -56,7 +56,7 @@ For Grafana setup (k8s-sidecar workaround), see [kube-prometheus-stack workaroun
 
 ## Usage
 
-Via h2c-manager (recommended -- auto-resolves certmanager + trust-manager dependencies):
+Via h2c-manager (recommended -- auto-resolves cert-manager + trust-manager dependencies):
 
 ```bash
 python3 h2c-manager.py servicemonitor
@@ -66,7 +66,7 @@ Manual (all operators must be in the same directory):
 
 ```bash
 mkdir -p operators
-cp h2c-operator-certmanager/certmanager.py operators/
+cp h2c-operator-cert-manager/cert_manager.py operators/
 cp h2c-operator-trust-manager/trust_manager.py operators/
 cp h2c-operator-servicemonitor/servicemonitor.py operators/
 
