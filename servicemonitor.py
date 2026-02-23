@@ -13,10 +13,10 @@ import sys
 
 import yaml
 
-from h2c import ProviderResult, Provider
+from h2c import ProviderResult, Provider  # pylint: disable=import-error  # h2c resolves at runtime
 
 
-class ServiceMonitorProvider(Provider):
+class ServiceMonitorProvider(Provider):  # pylint: disable=too-few-public-methods  # contract: one class, one method
     """Convert Prometheus + ServiceMonitor CRDs to a Prometheus compose service."""
 
     name = "servicemonitor"
@@ -26,7 +26,8 @@ class ServiceMonitorProvider(Provider):
     def __init__(self):
         self._prometheus_spec: dict | None = None
 
-    def convert(self, kind: str, manifests: list[dict], ctx) -> ConvertResult:
+    def convert(self, kind: str, manifests: list[dict], ctx) -> ProviderResult:
+        """Dispatch to Prometheus indexer or ServiceMonitor processor."""
         if kind == "Prometheus":
             self._index_prometheus(manifests)
             return ProviderResult()
@@ -53,7 +54,7 @@ class ServiceMonitorProvider(Provider):
 
     # -- Phase 2: Process ServiceMonitors --------------------------------
 
-    def _process_servicemonitors(self, manifests: list[dict], ctx) -> ConvertResult:
+    def _process_servicemonitors(self, manifests: list[dict], ctx) -> ProviderResult:
         if not manifests:
             return ProviderResult()
 

@@ -72,6 +72,21 @@ python3 helmfile2compose.py \
   --helmfile-dir ~/my-platform -e local --output-dir .
 ```
 
+## Code quality
+
+*Last updated: 2026-02-23*
+
+| Metric | Value |
+|--------|-------|
+| Pylint | 9.73/10 |
+| Pyflakes | clean |
+| Radon MI | 40.78 (A) |
+| Radon avg CC | 5.3 (B) |
+
+Worst CC: `_resolve_port` (13, C), `_process_servicemonitors` (12, C).
+
+The `E0401: Unable to import 'h2c'` is expected — extensions import from h2c-core at runtime, not at lint time.
+
 ## License
 
 Public domain.
