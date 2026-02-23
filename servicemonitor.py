@@ -13,7 +13,7 @@ import sys
 
 import yaml
 
-from h2c import ConvertResult, Provider
+from h2c import ProviderResult, Provider
 
 
 class ServiceMonitorProvider(Provider):
@@ -29,7 +29,7 @@ class ServiceMonitorProvider(Provider):
     def convert(self, kind: str, manifests: list[dict], ctx) -> ConvertResult:
         if kind == "Prometheus":
             self._index_prometheus(manifests)
-            return ConvertResult()
+            return ProviderResult()
         return self._process_servicemonitors(manifests, ctx)
 
     # -- Phase 1: Index Prometheus CRD -----------------------------------
@@ -55,7 +55,7 @@ class ServiceMonitorProvider(Provider):
 
     def _process_servicemonitors(self, manifests: list[dict], ctx) -> ConvertResult:
         if not manifests:
-            return ConvertResult()
+            return ProviderResult()
 
         exclude = ctx.config.get("exclude", [])
         scrape_jobs: list[dict] = []
@@ -103,7 +103,7 @@ class ServiceMonitorProvider(Provider):
 
         if not scrape_jobs:
             ctx.warnings.append("No resolvable ServiceMonitors found")
-            return ConvertResult()
+            return ProviderResult()
 
         self._write_scrape_config(scrape_jobs, ctx)
         service = self._build_prometheus_service(ca_mounts, ctx)
@@ -125,7 +125,7 @@ class ServiceMonitorProvider(Provider):
                     "ports": k8s_svc.get("ports", []),
                 }
 
-        return ConvertResult(services={"prometheus": service})
+        return ProviderResult(services={"prometheus": service})
 
     def _write_scrape_config(self, scrape_jobs: list[dict], ctx) -> None:
         """Write prometheus.yml from resolved scrape jobs."""
